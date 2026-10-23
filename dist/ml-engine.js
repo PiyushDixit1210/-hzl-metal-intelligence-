@@ -1,4 +1,4 @@
-/* Local supervised forecasting pilot. No data is transmitted by this engine. */
+/* Local supervised forecasting engine. No data is transmitted by this engine. */
 (function(root){
   'use strict';
   const columns=['month','metal','order_tonnes','premium_usd_t','imports_tonnes','lme_usd_t','fx_inr_usd','sector_index','domestic_risk','global_risk','known_at'];
@@ -6,7 +6,7 @@
   const monthIndex=s=>{const [y,m]=s.split('-').map(Number);return y*12+m-1};
   const monthString=n=>`${Math.floor(n/12)}-${String(n%12+1).padStart(2,'0')}`;
   function parseCSV(text){
-    if(text.length>2000000)throw Error('CSV exceeds the 2 MB browser-pilot limit.');
+    if(text.length>2000000)throw Error('CSV exceeds the 2 MB session limit.');
     const rows=[];let row=[],cell='',quoted=false;
     for(let i=0;i<=text.length;i++){
       const c=text[i]??'\n';
@@ -47,7 +47,7 @@
     clean.sort((a,b)=>a.metal.localeCompare(b.metal)||a.month.localeCompare(b.month));
     for(const metal of ['Zinc','Lead']){
       const group=clean.filter(r=>r.metal===metal);if(!group.length)continue;
-      if(group.length<36)throw Error(metal+' needs at least 36 consecutive closed months for this pilot.');
+      if(group.length<36)throw Error(metal+' needs at least 36 consecutive closed months for this model.');
       for(let i=1;i<group.length;i++)if(monthIndex(group[i].month)!==monthIndex(group[i-1].month)+1)throw Error(metal+' has a missing month before '+group[i].month+'.');
     }
     if(!clean.length)throw Error('No valid observations.');
@@ -107,7 +107,7 @@
       }
       groups[metal]=group;
     }
-    return {version:'hzl-ridge-pilot-1',trainedAt:new Date().toISOString(),cutoff,classification,groups,intervalStatus:'Not calibrated',acceptance:'Candidate only; client acceptance definition and independent validation pending'};
+    return {version:'hzl-ridge-pilot-1',trainedAt:new Date().toISOString(),cutoff,classification,groups,intervalStatus:'Not calibrated',acceptance:'Candidate only; operating acceptance definition and independent validation pending'};
   }
   function synthetic(){
     const output=[];let seed=1927;const noise=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296-.5};
